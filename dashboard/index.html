@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="To-Do List Life Dashboard — Kelola tugas, fokus, dan tautan favoritmu." />
+  <title>Life Dashboard ✦</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════════════ -->
+  <header class="topbar" role="banner">
+    <div class="topbar-brand">✦ Life Dashboard</div>
+    <button class="theme-toggle" id="theme-btn" aria-label="Ganti tema">
+      <span class="theme-icon">🌙</span>
+      <span class="theme-label">Dark</span>
+    </button>
+  </header>
+
+  <!-- ══════════════════════════════════════════════
+       MAIN GRID
+  ══════════════════════════════════════════════ -->
+  <main class="grid-root" role="main">
+
+    <!-- ── 1. GREETING ─────────────────────────── -->
+    <section class="panel panel-greeting" aria-label="Sapaan dan jam">
+
+      <div class="greeting-content">
+        <!-- Greeting text; klik untuk ganti nama -->
+        <h1 class="greeting-headline" id="greeting-text"
+            tabindex="0" role="button"
+            title="Klik untuk ubah nama kamu"
+            aria-label="Sapaan — klik untuk ubah nama">
+          Selamat Pagi!
+        </h1>
+
+        <!-- Inline name editor -->
+        <div class="name-editor" id="name-editor" role="form" aria-label="Ubah nama">
+          <input
+            type="text"
+            id="name-input"
+            class="name-field"
+            placeholder="Nama kamu…"
+            maxlength="32"
+            aria-label="Masukkan nama"
+          />
+          <button class="btn-ghost-white" id="name-save-btn" aria-label="Simpan nama">Simpan</button>
+          <button class="btn-ghost-white" id="name-cancel-btn" aria-label="Batal">✕</button>
+        </div>
+
+        <p class="greeting-date" id="date-text" aria-live="polite"></p>
+        <p class="greeting-time" id="time-text" aria-live="polite"></p>
+
+        <p class="greeting-hint" id="greeting-hint">👆 Klik sapaan untuk ubah nama</p>
+      </div>
+
+      <!-- Decorative blobs -->
+      <div class="blob blob-1" aria-hidden="true"></div>
+      <div class="blob blob-2" aria-hidden="true"></div>
+    </section>
+
+    <!-- ── 2. FOCUS TIMER ──────────────────────── -->
+    <section class="panel timer-panel" aria-label="Focus Timer (Pomodoro)">
+      <header class="panel-header">
+        <span class="panel-icon">⏱</span>
+        <h2 class="panel-title">Focus Timer</h2>
+      </header>
+
+      <!-- Duration picker -->
+      <div class="timer-config">
+        <label for="timer-duration" class="config-label">Durasi (menit)</label>
+        <input
+          type="number"
+          id="timer-duration"
+          class="config-input"
+          min="1" max="180" value="25"
+          aria-label="Durasi timer dalam menit"
+        />
+      </div>
+
+      <!-- Ring -->
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 120 120" width="160" height="160" aria-hidden="true">
+          <circle class="ring-track" cx="60" cy="60" r="52" />
+          <circle class="ring-fill"  cx="60" cy="60" r="52" id="ring-fill" />
+        </svg>
+        <span class="ring-time" id="timer-display" aria-live="polite">25:00</span>
+      </div>
+
+      <p class="timer-status" id="timer-status">⏱ Siap memulai fokus</p>
+
+      <div class="timer-btns">
+        <button class="btn btn-start" id="btn-start" aria-label="Mulai timer">▶ Mulai</button>
+        <button class="btn btn-stop"  id="btn-stop"  aria-label="Hentikan timer">⏸ Stop</button>
+        <button class="btn btn-reset" id="btn-reset" aria-label="Reset timer">↺ Reset</button>
+      </div>
+    </section>
+
+    <!-- ── 3. TO-DO LIST ───────────────────────── -->
+    <section class="panel todo-panel" aria-label="Daftar Tugas">
+      <header class="panel-header">
+        <span class="panel-icon">📝</span>
+        <h2 class="panel-title">To-Do List</h2>
+        <span class="todo-count-badge" id="todo-badge" aria-label="Jumlah tugas aktif">0</span>
+      </header>
+
+      <!-- Add task -->
+      <div class="add-row">
+        <input
+          type="text"
+          id="todo-input"
+          class="field"
+          placeholder="Tambah tugas baru…"
+          maxlength="120"
+          aria-label="Tugas baru"
+        />
+        <button class="btn btn-accent" id="todo-add-btn" aria-label="Tambah tugas">+ Tambah</button>
+      </div>
+
+      <!-- Duplicate warning -->
+      <p class="warn-msg" id="dup-warning" role="alert" aria-live="assertive"></p>
+
+      <!-- Sort bar -->
+      <div class="sort-bar" role="group" aria-label="Urutkan tugas">
+        <span class="sort-label">Urutkan:</span>
+        <button class="sort-pill active" id="sort-default" aria-pressed="true">Default</button>
+        <button class="sort-pill" id="sort-az"      aria-pressed="false">A → Z</button>
+        <button class="sort-pill" id="sort-pending" aria-pressed="false">Belum selesai</button>
+      </div>
+
+      <!-- Task list -->
+      <ul class="task-list" id="task-list" aria-label="Daftar tugas"></ul>
+    </section>
+
+    <!-- ── 4. QUICK LINKS ──────────────────────── -->
+    <section class="panel links-panel" id="links-panel" aria-label="Quick Links">
+      <header class="panel-header">
+        <span class="panel-icon">🔗</span>
+        <h2 class="panel-title">Quick Links</h2>
+        <div class="links-actions">
+          <button class="btn btn-sm btn-accent"     id="btn-add-link"  aria-label="Tambah link baru">+ Tambah</button>
+          <button class="btn btn-sm btn-outline"    id="btn-edit-links" aria-label="Edit mode links">✏️ Edit</button>
+        </div>
+      </header>
+
+      <!-- Links grid -->
+      <div class="links-grid" id="links-grid" role="list" aria-label="Link tersimpan"></div>
+
+      <!-- Add link form -->
+      <div class="add-link-form" id="add-link-form" role="form" aria-label="Form tambah link">
+        <input
+          type="text"
+          id="link-name"
+          class="field"
+          placeholder="Label (mis. YouTube)"
+          maxlength="30"
+          aria-label="Label link"
+        />
+        <input
+          type="url"
+          id="link-url"
+          class="field"
+          placeholder="URL (mis. https://…)"
+          aria-label="URL link"
+        />
+        <div class="form-btns">
+          <button class="btn btn-accent"   id="btn-save-link"   aria-label="Simpan link">Simpan</button>
+          <button class="btn btn-outline"  id="btn-cancel-link" aria-label="Batal tambah link">Batal</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

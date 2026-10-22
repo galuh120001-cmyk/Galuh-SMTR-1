@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard</title>
+  <style>
+    /* ─── Reset & Base ──────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ─── Dark theme (default) ──────────────────────────────────── */
+    :root {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --surface2:  #22263a;
+      --border:    #2e3248;
+      --accent:    #6c63ff;
+      --accent2:   #ff6584;
+      --text:      #e8eaf6;
+      --text-mute: #7c82a0;
+      --done:      #4caf50;
+      --radius:    14px;
+      --shadow:    0 4px 24px rgba(0,0,0,.45);
+    }
+
+    /* ─── Light theme ───────────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg:        #f0f4f8;
+      --surface:   #ffffff;
+      --surface2:  #e8edf5;
+      --border:    #d1d9e6;
+      --accent:    #6c63ff;
+      --accent2:   #ff6584;
+      --text:      #1a202c;
+      --text-mute: #718096;
+      --done:      #38a169;
+      --shadow:    0 4px 24px rgba(0,0,0,.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+      transition: background .3s ease, color .3s ease;
+    }
+
+    /* ─── Layout ────────────────────────────────────────────────── */
+    .grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 20px;
+    }
+
+    /* ─── Theme Toggle Button ───────────────────────────────────── */
+    .theme-toggle {
+      display: flex;
+      justify-content: flex-end;
+      max-width: 1100px;
+      margin: 0 auto 12px;
+    }
+
+    #btn-theme {
+      cursor: pointer;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 18px;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: background .2s, border-color .2s, color .2s;
+    }
+
+    #btn-theme:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      transition: background .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    /* greeting spans full width */
+    .card--greeting { grid-column: 1 / -1; text-align: center; }
+
+    /* links spans full width */
+    .card--links { grid-column: 1 / -1; }
+
+    /* ─── Greeting ──────────────────────────────────────────────── */
+    #greeting-text {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: -.5px;
+    }
+
+    #greeting-text span { color: var(--accent); }
+
+    /* ─── Name editor ───────────────────────────────────────────── */
+    #name-edit-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    #name-display-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .85rem;
+      color: var(--text-mute);
+    }
+
+    #name-display-wrap strong {
+      color: var(--accent);
+      font-size: .95rem;
+    }
+
+    #btn-edit-name {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-mute);
+      font-size: .75rem;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+
+    #btn-edit-name:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    #name-form {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    #name-form.visible { display: flex; }
+
+    #name-input-field {
+      background: var(--surface2);
+      border: 1px solid var(--accent);
+      border-radius: 8px;
+      padding: 7px 14px;
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      width: 200px;
+      transition: background .3s, color .3s;
+    }
+
+    #name-input-field::placeholder { color: var(--text-mute); }
+
+    #btn-save-name {
+      background: var(--accent);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      padding: 7px 16px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+
+    #btn-save-name:hover { opacity: .85; }
+
+    #btn-cancel-name {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-mute);
+      padding: 7px 14px;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+
+    #btn-cancel-name:hover {
+      border-color: var(--accent2);
+      color: var(--accent2);
+    }
+
+    #time-display {
+      font-size: clamp(2.4rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin: 8px 0 4px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #date-display {
+      font-size: 1rem;
+      color: var(--text-mute);
+    }
+
+    /* ─── Focus Timer ───────────────────────────────────────────── */
+    .card__title {
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-mute);
+      margin-bottom: 18px;
+    }
+
+    .timer-ring {
+      position: relative;
+      width: 170px;
+      height: 170px;
+      margin: 0 auto 20px;
+    }
+
+    .timer-ring svg {
+      transform: rotate(-90deg);
+      width: 170px;
+      height: 170px;
+    }
+
+    .timer-ring__bg { fill: none; stroke: var(--surface2); stroke-width: 8; }
+
+    .timer-ring__progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 471;   /* 2π × 75 */
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset .5s linear, stroke .3s;
+    }
+
+    .timer-ring__label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    #timer-display {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    #timer-status {
+      font-size: .75rem;
+      color: var(--text-mute);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .timer-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    /* ─── Buttons ───────────────────────────────────────────────── */
+    .btn {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 20px;
+      font-size: .9rem;
+      font-weight: 600;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.96); }
+    .btn:hover  { opacity: .88; }
+
+    .btn--primary { background: var(--accent); color: #fff; }
+    .btn--ghost   { background: var(--surface2); color: var(--text); }
+    .btn--danger  { background: #3a1f2e; color: var(--accent2); }
+
+    /* ─── To-Do ─────────────────────────────────────────────────── */
+    .todo-input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    /* Baris tanggal & waktu di bawah input utama */
+    .todo-datetime-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .todo-datetime-row label {
+      font-size: .75rem;
+      color: var(--text-mute);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .input-date, .input-time {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      color: var(--text);
+      font-size: .8rem;
+      outline: none;
+      cursor: pointer;
+      transition: border-color .2s, background .3s, color .3s;
+      /* Chromium date picker color fix */
+      color-scheme: dark;
+    }
+    [data-theme="light"] .input-date,
+    [data-theme="light"] .input-time { color-scheme: light; }
+
+    .input-date:focus, .input-time:focus { border-color: var(--accent); }
+
+    .btn-clear-dt {
+      background: none;
+      border: none;
+      color: var(--text-mute);
+      font-size: .75rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+      white-space: nowrap;
+    }
+    .btn-clear-dt:hover { color: var(--accent2); background: rgba(255,101,132,.1); }
+
+    .input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 14px;
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      transition: border-color .2s, background .3s, color .3s;
+    }
+    .input:focus { border-color: var(--accent); }
+    .input::placeholder { color: var(--text-mute); }
+
+    #todo-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      transition: opacity .2s, background .3s, border-color .3s;
+    }
+
+    .todo-item.done { opacity: .55; }
+
+    .todo-cb {
+      appearance: none;
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 50%;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background .2s, border-color .2s;
+      position: relative;
+    }
+
+    .todo-cb:checked {
+      background: var(--done);
+      border-color: var(--done);
+    }
+    .todo-cb:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-52%);
+      font-size: 11px;
+      color: #fff;
+    }
+
+    .todo-text {
+      flex: 1;
+      font-size: .9rem;
+      word-break: break-word;
+    }
+
+    .done .todo-text { text-decoration: line-through; color: var(--text-mute); }
+
+    .todo-edit-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--accent);
+      color: var(--text);
+      font-size: .9rem;
+      outline: none;
+      padding: 2px 4px;
+    }
+
+    .todo-actions { display: flex; gap: 6px; }
+
+    .icon-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-mute);
+      padding: 3px 5px;
+      border-radius: 5px;
+      font-size: .95rem;
+      transition: color .15s, background .15s;
+    }
+    .icon-btn:hover { color: var(--text); background: var(--border); }
+    .icon-btn.delete:hover { color: var(--accent2); }
+
+    .todo-empty {
+      text-align: center;
+      color: var(--text-mute);
+      font-size: .85rem;
+      padding: 24px 0;
+    }
+
+    /* ─── Deadline badge di dalam item tugas ────────────────────── */
+    .todo-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+
+    .todo-deadline {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: .72rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 5px;
+      width: fit-content;
+    }
+
+    /* Status warna deadline */
+    .deadline--ok {
+      background: rgba(108,99,255,.13);
+      color: var(--accent);
+    }
+
+    .deadline--soon {           /* < 24 jam lagi */
+      background: rgba(240,180,41,.15);
+      color: #f0b429;
+    }
+
+    .deadline--overdue {        /* sudah lewat */
+      background: rgba(255,101,132,.15);
+      color: var(--accent2);
+    }
+
+    .deadline--done {           /* selesai */
+      background: rgba(76,175,80,.12);
+      color: var(--done);
+      text-decoration: line-through;
+    }
+
+    /* ─── Duplicate warning ─────────────────────────────────────── */
+    .todo-dup-msg {
+      display: none;              /* hidden until needed               */
+      align-items: center;
+      gap: 7px;
+      background: rgba(255, 101, 132, .12);
+      border: 1px solid var(--accent2);
+      border-radius: 8px;
+      padding: 8px 14px;
+      margin-bottom: 12px;
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--accent2);
+      animation: shakeX .35s ease;
+    }
+
+    .todo-dup-msg.visible { display: flex; }
+
+    @keyframes shakeX {
+      0%,100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+
+    /* ─── Quick Links ───────────────────────────────────────────── */
+    .links-add-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .links-add-row .input { min-width: 120px; }
+
+    #links-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .link-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: .85rem;
+      font-weight: 500;
+      transition: border-color .2s, background .2s, color .3s;
+      max-width: 180px;
+    }
+
+    .link-chip:hover { border-color: var(--accent); background: var(--surface); }
+
+    .link-chip img {
+      width: 16px; height: 16px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    .link-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .link-chip .del-link {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-mute);
+      cursor: pointer;
+      font-size: .8rem;
+      padding: 0 2px;
+      border-radius: 3px;
+      line-height: 1;
+      flex-shrink: 0;
+      transition: color .15s;
+    }
+    .link-chip .del-link:hover { color: var(--accent2); }
+
+    .links-empty {
+      color: var(--text-mute);
+      font-size: .85rem;
+    }
+
+    /* ─── Responsive ────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .grid { grid-template-columns: 1fr; }
+      .card--greeting, .card--links { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── THEME TOGGLE ───────────────────────────────────────────── -->
+<div class="theme-toggle">
+  <button id="btn-theme">🌙 Dark mode</button>
+</div>
+
+<div class="grid">
+
+  <!-- ── GREETING ───────────────────────────────────────────────── -->
+  <div class="card card--greeting">
+    <div id="greeting-text">Loading... 👋</div>
+    <div id="time-display">00:00:00</div>
+    <div id="date-display">Loading...</div>
+
+    <!-- Name editor -->
+    <div id="name-edit-area">
+      <!-- Display state -->
+      <div id="name-display-wrap">
+        <span id="name-display-label">Nama kamu:</span>
+        <strong id="name-display-val">—</strong>
+        <button id="btn-edit-name">✏️ Ubah</button>
+      </div>
+
+      <!-- Edit form (hidden by default) -->
+      <div id="name-form">
+        <input
+          type="text"
+          id="name-input-field"
+          placeholder="Masukkan namamu…"
+          maxlength="32"
+          autocomplete="off"
+        />
+        <button id="btn-save-name">Simpan</button>
+        <button id="btn-cancel-name">Batal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FOCUS TIMER ────────────────────────────────────────────── -->
+  <div class="card card--timer">
+    <div class="card__title">🎯 Focus Timer</div>
+    <div class="timer-ring">
+      <svg viewBox="0 0 170 170">
+        <circle class="timer-ring__bg"       cx="85" cy="85" r="75"/>
+        <circle class="timer-ring__progress" cx="85" cy="85" r="75" id="timer-progress"/>
+      </svg>
+      <div class="timer-ring__label">
+        <div id="timer-display">25:00</div>
+        <div id="timer-status">ready</div>
+      </div>
+    </div>
+    <div class="timer-btns">
+      <button class="btn btn--primary" id="btn-start">▶ Start</button>
+      <button class="btn btn--ghost"   id="btn-reset">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- ── TO-DO LIST ─────────────────────────────────────────────── -->
+  <div class="card card--todo">
+    <div class="card__title">✅ To-Do List</div>
+    <div class="todo-input-row">
+      <input class="input" id="todo-input" type="text" placeholder="Tambah tugas baru…" maxlength="120" autocomplete="off"/>
+      <button class="btn btn--primary" id="btn-add-todo">Tambah</button>
+    </div>
+    <!-- Baris tanggal & waktu deadline (opsional) -->
+    <div class="todo-datetime-row">
+      <label for="todo-date">📅 Tenggat:</label>
+      <input class="input-date" type="date" id="todo-date" aria-label="Tanggal tenggat tugas"/>
+      <input class="input-time" type="time" id="todo-time" aria-label="Jam tenggat tugas"/>
+      <button class="btn-clear-dt" id="btn-clear-dt" title="Hapus tanggal & waktu">✕ Hapus</button>
+    </div>
+    <!-- Pesan duplikat (tersembunyi secara default) -->
+    <div id="todo-dup-msg" class="todo-dup-msg" role="alert" aria-live="assertive"></div>
+    <ul id="todo-list"></ul>
+  </div>
+
+  <!-- ── QUICK LINKS ────────────────────────────────────────────── -->
+  <div class="card card--links">
+    <div class="card__title">🔗 Quick Links</div>
+    <div class="links-add-row">
+      <input class="input" id="link-name" type="text"  placeholder="Label (e.g. YouTube)" maxlength="30"/>
+      <input class="input" id="link-url"  type="url"   placeholder="URL (e.g. https://youtube.com)"/>
+      <button class="btn btn--primary" id="btn-add-link">Add Link</button>
+    </div>
+    <div id="links-grid"></div>
+  </div>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   LIGHT / DARK MODE
+════════════════════════════════════════════════════════════════ */
+(function () {
+  const THEME_KEY = 'dashboard_theme';
+  const btn       = document.getElementById('btn-theme');
+  const root      = document.documentElement;
+
+  // Apply saved preference (default: dark)
+  const saved = localStorage.getItem(THEME_KEY) || 'dark';
+  applyTheme(saved);
+
+  btn.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    applyTheme(next);
+    localStorage.setItem(THEME_KEY, next);
+  });
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    btn.textContent = theme === 'light' ? '🌙 Dark mode' : '☀️ Light mode';
+  }
+})();
+
+
+/* ════════════════════════════════════════════════════════════════
+   GREETING & CLOCK
+════════════════════════════════════════════════════════════════ */
+
+const NAME_KEY = 'dashboard_username';
+
+// Load saved name or default to empty string
+let currentName = localStorage.getItem(NAME_KEY) || '';
+
+function updateClock() {
+  const now  = new Date();
+  const h    = now.getHours();
+  const pad  = n => String(n).padStart(2, '0');
+
+  // Time
+  document.getElementById('time-display').textContent =
+    `${pad(h)}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+  // Date
+  const days   = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni',
+                  'Juli','Agustus','September','Oktober','November','Desember'];
+  document.getElementById('date-display').textContent =
+    `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+  // Greeting
+  let emoji, label;
+  if      (h >= 5  && h < 12) { emoji = '🌅'; label = 'Selamat Pagi'; }
+  else if (h >= 12 && h < 15) { emoji = '☀️'; label = 'Selamat Siang'; }
+  else if (h >= 15 && h < 18) { emoji = '🌇'; label = 'Selamat Sore'; }
+  else                         { emoji = '🌙'; label = 'Selamat Malam'; }
+
+  const displayName = currentName || 'Kamu';
+  document.getElementById('greeting-text').innerHTML =
+    `${label}, <span>${displayName}</span> ${emoji}`;
+}
+
+/** Sync the "Nama kamu: <strong>..." label under the greeting */
+function updateNameDisplay() {
+  const val = document.getElementById('name-display-val');
+  val.textContent = currentName || '—';
+}
+
+/** Open the name edit form */
+function openNameForm() {
+  document.getElementById('name-display-wrap').style.display = 'none';
+  const form = document.getElementById('name-form');
+  form.classList.add('visible');
+  const input = document.getElementById('name-input-field');
+  input.value = currentName;
+  input.focus();
+  input.select();
+}
+
+/** Close the name edit form (without saving) */
+function closeNameForm() {
+  document.getElementById('name-form').classList.remove('visible');
+  document.getElementById('name-display-wrap').style.display = '';
+}
+
+/** Save the name and close the form */
+function saveName() {
+  const input = document.getElementById('name-input-field');
+  const val   = input.value.trim();
+  currentName = val;
+  if (val) {
+    localStorage.setItem(NAME_KEY, val);
+  } else {
+    localStorage.removeItem(NAME_KEY);
+  }
+  closeNameForm();
+  updateNameDisplay();
+  updateClock(); // refresh greeting immediately
+}
+
+// Wire up name editor buttons
+document.getElementById('btn-edit-name').addEventListener('click', openNameForm);
+document.getElementById('btn-save-name').addEventListener('click', saveName);
+document.getElementById('btn-cancel-name').addEventListener('click', closeNameForm);
+document.getElementById('name-input-field').addEventListener('keydown', e => {
+  if (e.key === 'Enter')  saveName();
+  if (e.key === 'Escape') closeNameForm();
+});
+
+// Initial render
+updateNameDisplay();
+updateClock();
+setInterval(updateClock, 1000);
+
+
+/* ════════════════════════════════════════════════════════════════
+   FOCUS TIMER
+════════════════════════════════════════════════════════════════ */
+const FOCUS_MINUTES = 25;
+const TOTAL_SECS    = FOCUS_MINUTES * 60;
+const CIRCUMFERENCE = 2 * Math.PI * 75; // ≈ 471.24
+
+let timerInterval = null;
+let secondsLeft   = TOTAL_SECS;
+let running       = false;
+
+const displayEl   = document.getElementById('timer-display');
+const statusEl    = document.getElementById('timer-status');
+const progressEl  = document.getElementById('timer-progress');
+const btnStart    = document.getElementById('btn-start');
+const btnReset    = document.getElementById('btn-reset');
+
+progressEl.style.strokeDasharray  = CIRCUMFERENCE;
+progressEl.style.strokeDashoffset = 0;
+
+function renderTimer() {
+  const m   = Math.floor(secondsLeft / 60);
+  const s   = secondsLeft % 60;
+  displayEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+  const fraction = secondsLeft / TOTAL_SECS;
+  progressEl.style.strokeDashoffset = CIRCUMFERENCE * (1 - fraction);
+
+  // colour shift: accent → accent2 as time runs out
+  if (fraction > .5)       progressEl.style.stroke = 'var(--accent)';
+  else if (fraction > .2)  progressEl.style.stroke = '#f0b429';
+  else                     progressEl.style.stroke = 'var(--accent2)';
+}
+
+function startTimer() {
+  if (secondsLeft === 0) return;
+  running = true;
+  btnStart.textContent = '⏸ Pause';
+  statusEl.textContent = 'focusing…';
+
+  timerInterval = setInterval(() => {
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+      running = false;
+      statusEl.textContent = 'done! 🎉';
+      btnStart.textContent = '▶ Start';
+      return;
+    }
+    secondsLeft--;
+    renderTimer();
+  }, 1000);
+}
+
+function pauseTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  running = false;
+  btnStart.textContent = '▶ Resume';
+  statusEl.textContent = 'paused';
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  running = false;
+  secondsLeft = TOTAL_SECS;
+  btnStart.textContent = '▶ Start';
+  statusEl.textContent = 'ready';
+  renderTimer();
+}
+
+btnStart.addEventListener('click', () => {
+  if (running) pauseTimer(); else startTimer();
+});
+btnReset.addEventListener('click', resetTimer);
+
+renderTimer();
+
+
+/* ════════════════════════════════════════════════════════════════
+   TO-DO LIST
+════════════════════════════════════════════════════════════════ */
+const TODO_KEY = 'dashboard_todos';
+
+function loadTodos() {
+  try { return JSON.parse(localStorage.getItem(TODO_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveTodos(todos) {
+  localStorage.setItem(TODO_KEY, JSON.stringify(todos));
+}
+
+/* ── Helpers deadline ──────────────────────────────────────────── */
+
+/**
+ * Bangun ISO-8601 string dari date + time string.
+ * Mengembalikan null jika date kosong.
+ */
+function buildDeadline(dateVal, timeVal) {
+  if (!dateVal) return null;
+  // Jika tidak ada waktu, pakai 23:59 sebagai default
+  const t = timeVal || '23:59';
+  return new Date(`${dateVal}T${t}`).toISOString();
+}
+
+/**
+ * Format deadline menjadi teks yang ramah dibaca.
+ * Mengembalikan objek { text, cls } untuk label & CSS class.
+ */
+function formatDeadline(isoString, done) {
+  if (!isoString) return null;
+
+  const deadline = new Date(isoString);
+  const now      = new Date();
+  const diffMs   = deadline - now;
+  const diffMin  = Math.floor(diffMs / 60000);
+
+  const pad  = n => String(n).padStart(2, '0');
+  const days = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+  const mons = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+
+  const dateStr = `${days[deadline.getDay()]}, ${deadline.getDate()} ${mons[deadline.getMonth()]} ${deadline.getFullYear()}`;
+  const timeStr = `${pad(deadline.getHours())}:${pad(deadline.getMinutes())}`;
+  const full    = `${dateStr} ${timeStr}`;
+
+  if (done)         return { text: `✅ ${full}`, cls: 'deadline--done' };
+  if (diffMs < 0)   return { text: `⛔ Lewat: ${full}`, cls: 'deadline--overdue' };
+  if (diffMin < 60) return { text: `⚡ ${diffMin} menit lagi — ${timeStr}`, cls: 'deadline--soon' };
+  if (diffMin < 1440) {
+    const h = Math.floor(diffMin / 60), m = diffMin % 60;
+    return { text: `⏰ ${h}j ${m}m lagi — ${timeStr}`, cls: 'deadline--soon' };
+  }
+  return { text: `📅 ${full}`, cls: 'deadline--ok' };
+}
+
+/* ── Render ─────────────────────────────────────────────────────── */
+
+function renderTodos() {
+  const todos  = loadTodos();
+  const listEl = document.getElementById('todo-list');
+  listEl.innerHTML = '';
+
+  if (todos.length === 0) {
+    listEl.innerHTML = '<div class="todo-empty">Belum ada tugas — tambahkan di atas!</div>';
+    return;
+  }
+
+  todos.forEach((todo, idx) => {
+    const li = document.createElement('li');
+    li.className = 'todo-item' + (todo.done ? ' done' : '');
+
+    /* Checkbox */
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'todo-cb';
+    cb.checked = todo.done;
+    cb.addEventListener('change', () => toggleTodo(idx));
+
+    /* Body: teks + deadline badge */
+    const body = document.createElement('div');
+    body.className = 'todo-body';
+
+    const span = document.createElement('span');
+    span.className   = 'todo-text';
+    span.textContent = todo.text;
+    body.appendChild(span);
+
+    // Deadline badge (hanya jika ada)
+    const dl = formatDeadline(todo.deadline, todo.done);
+    if (dl) {
+      const badge = document.createElement('span');
+      badge.className   = `todo-deadline ${dl.cls}`;
+      badge.textContent = dl.text;
+      body.appendChild(badge);
+    }
+
+    /* Actions */
+    const actions = document.createElement('div');
+    actions.className = 'todo-actions';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'icon-btn';
+    editBtn.title     = 'Edit tugas';
+    editBtn.textContent = '✏️';
+    editBtn.addEventListener('click', () => startEdit(idx, li, span, body));
+
+    const delBtn = document.createElement('button');
+    delBtn.className  = 'icon-btn delete';
+    delBtn.title      = 'Hapus tugas';
+    delBtn.textContent = '🗑';
+    delBtn.addEventListener('click', () => deleteTodo(idx));
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+
+    li.appendChild(cb);
+    li.appendChild(body);
+    li.appendChild(actions);
+    listEl.appendChild(li);
+  });
+}
+
+/* Auto-refresh deadline badge setiap menit */
+setInterval(renderTodos, 60000);
+
+/* ── CRUD ───────────────────────────────────────────────────────── */
+
+function addTodo() {
+  const input   = document.getElementById('todo-input');
+  const dupMsg  = document.getElementById('todo-dup-msg');
+  const text    = input.value.trim();
+
+  if (!text) return;
+
+  const todos = loadTodos();
+
+  // Cek duplikat (case-insensitive)
+  const isDuplicate = todos.some(
+    t => t.text.trim().toLowerCase() === text.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    dupMsg.textContent = `⚠️ Tugas "${text}" sudah ada dalam daftar!`;
+    dupMsg.classList.remove('visible');
+    void dupMsg.offsetWidth;
+    dupMsg.classList.add('visible');
+    input.focus();
+    input.select();
+    clearTimeout(dupMsg._hideTimer);
+    dupMsg._hideTimer = setTimeout(() => dupMsg.classList.remove('visible'), 3000);
+    return;
+  }
+
+  dupMsg.classList.remove('visible');
+
+  // Ambil nilai deadline dari input
+  const dateVal = document.getElementById('todo-date').value;
+  const timeVal = document.getElementById('todo-time').value;
+  const deadline = buildDeadline(dateVal, timeVal);
+
+  todos.push({ text, done: false, deadline });
+  saveTodos(todos);
+  input.value = '';
+  // Kosongkan input datetime setelah tambah
+  document.getElementById('todo-date').value = '';
+  document.getElementById('todo-time').value = '';
+  renderTodos();
+}
+
+function toggleTodo(idx) {
+  const todos = loadTodos();
+  todos[idx].done = !todos[idx].done;
+  saveTodos(todos);
+  renderTodos();
+}
+
+function deleteTodo(idx) {
+  const todos = loadTodos();
+  todos.splice(idx, 1);
+  saveTodos(todos);
+  renderTodos();
+}
+
+function startEdit(idx, li, span, body) {
+  const todos = loadTodos();
+  const todo  = todos[idx];
+
+  /* ── Ganti span teks dengan input teks ── */
+  const editInput = document.createElement('input');
+  editInput.type      = 'text';
+  editInput.className = 'todo-edit-input';
+  editInput.value     = todo.text;
+  editInput.maxLength = 120;
+  body.replaceChild(editInput, span);
+
+  /* ── Tambahkan row edit deadline ── */
+  const dtRow = document.createElement('div');
+  dtRow.style.cssText = 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px;';
+
+  const isoToDateVal = iso => iso ? iso.slice(0, 10) : '';
+  const isoToTimeVal = iso => iso ? iso.slice(11, 16) : '';
+
+  const dateEdit = document.createElement('input');
+  dateEdit.type        = 'date';
+  dateEdit.className   = 'input-date';
+  dateEdit.value       = isoToDateVal(todo.deadline);
+  dateEdit.placeholder = 'Tanggal';
+
+  const timeEdit = document.createElement('input');
+  timeEdit.type      = 'time';
+  timeEdit.className = 'input-time';
+  timeEdit.value     = isoToTimeVal(todo.deadline);
+
+  const clearDtBtn = document.createElement('button');
+  clearDtBtn.type        = 'button';
+  clearDtBtn.className   = 'btn-clear-dt';
+  clearDtBtn.textContent = '✕';
+  clearDtBtn.title       = 'Hapus tenggat';
+  clearDtBtn.addEventListener('click', () => {
+    dateEdit.value = '';
+    timeEdit.value = '';
+  });
+
+  dtRow.appendChild(dateEdit);
+  dtRow.appendChild(timeEdit);
+  dtRow.appendChild(clearDtBtn);
+  body.appendChild(dtRow);
+
+  editInput.focus();
+
+  function commitEdit() {
+    const val = editInput.value.trim();
+    if (val) {
+      todos[idx].text     = val;
+      todos[idx].deadline = buildDeadline(dateEdit.value, timeEdit.value);
+      saveTodos(todos);
+    }
+    renderTodos();
+  }
+
+  editInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { commitEdit(); }
+    if (e.key === 'Escape') { renderTodos(); }
+  });
+
+  // Simpan saat blur dari kedua field datetime
+  dateEdit.addEventListener('change', () => {});
+  timeEdit.addEventListener('change', () => {});
+
+  // Simpan saat klik di luar area edit
+  li.querySelector('.icon-btn').addEventListener('click', commitEdit, { once: true });
+}
+
+/* ── Event listeners ─────────────────────────────────────────────── */
+
+document.getElementById('btn-add-todo').addEventListener('click', addTodo);
+document.getElementById('todo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addTodo();
+});
+// Sembunyikan peringatan duplikat saat pengguna mulai mengetik
+document.getElementById('todo-input').addEventListener('input', () => {
+  const dupMsg = document.getElementById('todo-dup-msg');
+  if (dupMsg.classList.contains('visible')) {
+    dupMsg.classList.remove('visible');
+    clearTimeout(dupMsg._hideTimer);
+  }
+});
+// Tombol hapus tanggal & waktu
+document.getElementById('btn-clear-dt').addEventListener('click', () => {
+  document.getElementById('todo-date').value = '';
+  document.getElementById('todo-time').value = '';
+});
+
+renderTodos();
+
+
+/* ════════════════════════════════════════════════════════════════
+   QUICK LINKS
+════════════════════════════════════════════════════════════════ */
+const LINKS_KEY = 'dashboard_links';
+
+// Default links on first load
+const DEFAULT_LINKS = [
+  { name: 'Google',    url: 'https://google.com' },
+  { name: 'YouTube',   url: 'https://youtube.com' },
+  { name: 'GitHub',    url: 'https://github.com' },
+  { name: 'Wikipedia', url: 'https://wikipedia.org' },
+];
+
+function loadLinks() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(LINKS_KEY));
+    if (stored) return stored;
+    // seed defaults on first use
+    localStorage.setItem(LINKS_KEY, JSON.stringify(DEFAULT_LINKS));
+    return DEFAULT_LINKS;
+  } catch { return []; }
+}
+
+function saveLinks(links) {
+  localStorage.setItem(LINKS_KEY, JSON.stringify(links));
+}
+
+function faviconUrl(url) {
+  try {
+    const origin = new URL(url).origin;
+    return `https://www.google.com/s2/favicons?sz=32&domain_url=${encodeURIComponent(origin)}`;
+  } catch { return ''; }
+}
+
+function renderLinks() {
+  const links  = loadLinks();
+  const grid   = document.getElementById('links-grid');
+  grid.innerHTML = '';
+
+  if (links.length === 0) {
+    grid.innerHTML = '<span class="links-empty">No links yet — add one above!</span>';
+    return;
+  }
+
+  links.forEach((link, idx) => {
+    const a = document.createElement('a');
+    a.className  = 'link-chip';
+    a.href       = link.url;
+    a.target     = '_blank';
+    a.rel        = 'noopener noreferrer';
+
+    const favicon = document.createElement('img');
+    favicon.src   = faviconUrl(link.url);
+    favicon.alt   = '';
+    favicon.onerror = () => { favicon.style.display = 'none'; };
+
+    const label = document.createElement('span');
+    label.textContent = link.name;
+
+    const del = document.createElement('button');
+    del.className   = 'del-link';
+    del.title       = 'Remove link';
+    del.textContent = '×';
+    del.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      deleteLink(idx);
+    });
+
+    a.appendChild(favicon);
+    a.appendChild(label);
+    a.appendChild(del);
+    grid.appendChild(a);
+  });
+}
+
+function addLink() {
+  const nameEl = document.getElementById('link-name');
+  const urlEl  = document.getElementById('link-url');
+  let   name   = nameEl.value.trim();
+  let   url    = urlEl.value.trim();
+
+  if (!url) return;
+
+  // auto-prepend https:// if missing
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  // validate URL
+  try { new URL(url); } catch { urlEl.focus(); return; }
+
+  if (!name) {
+    try { name = new URL(url).hostname.replace(/^www\./, ''); }
+    catch { name = url; }
+  }
+
+  const links = loadLinks();
+  links.push({ name, url });
+  saveLinks(links);
+  nameEl.value = '';
+  urlEl.value  = '';
+  renderLinks();
+}
+
+function deleteLink(idx) {
+  const links = loadLinks();
+  links.splice(idx, 1);
+  saveLinks(links);
+  renderLinks();
+}
+
+document.getElementById('btn-add-link').addEventListener('click', addLink);
+document.getElementById('link-url').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addLink();
+});
+
+renderLinks();
+</script>
+</body>
+</html>
